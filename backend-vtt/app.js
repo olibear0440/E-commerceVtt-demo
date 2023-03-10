@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("./dbMongoose");
 const Product = require("./models/Product");
+const User = require("../models/User")
 
 const products = [
   {
@@ -101,30 +102,65 @@ const cartItems = [products[0], products[2], products[3]];
 const app = express();
 app.use(bodyParser.json());
 
+//creer un produit
+app.post("/api/products", (req, res, next) => {
+  delete req.body._id;
+  const product = new Product({
+    ...req.body,
+  });
+  product
+    .save()
+    .then(() => res.status(201).json({ message: "Le produit à été enregistré !" }))
+    .catch((error) => res.status(400).json({ error: error }));
+});
+
+//recuperer tous les produits
+app.get("/api/products", (req, res, next) => {
+  Product.find()
+    .then((products) => res.status(200).json(products))
+    .catch((error) => res.status(400).json({ error: error }));
+});
+
+//récuperer un produit par son id
+app.get("/api/products/:productId", (req, res, next) => {
+  Product.findOne(
+    { _id: req.params.productId },
+    { ...req.body, _id: req.params.id }
+  )
+    .then((products) => res.status(200).json(products))
+    .catch((error) => res.status(400).json({ error: error }));
+});
+
+//modifier un produit recuperer par son id
+app.put("/api/products/:productId", (req, res, next) => {
+  Product.updateOne({ _id: req.params.productId })
+    .then((products) => res.status(201).json(products))
+    .catch((error) => res.status(404).json({ error: error }));
+});
+
+//supprimer un produit par son id
+app.delete("/api/products/:productId", (req, res) => {
+  Product.deleteOne({ _id: req.params.productId })
+    .then((products) => res.status(200).json({ message: "Le produit à été supprimé !"}))
+    .catch((error) => res.status(404).json({ error: error }));
+});
+
+
+
+
+app.get("/api/users/:userId/cart", (req, res) => {
+  User.findOne({ _id: req.params.userId })
+    .then((users) => res.status(200).json(users))
+    .catch((error) => res.status(404).json({ error: error }));
+  res.status(200).json(cartItems);
+});
+
 app.post("/api/users/:userId/cart", (req, res) => {
   const { productId } = req.body;
   const product = products.find((product) => product.id === productId);
   if (product) {
     cartItems.push(product);
     res.status(200).json(cartItems);
-  } else {
-    res.status(404).json("produit introuvable");
-  }
-});
-
-app.get("/api/products", (req, res) => {
-  res.status(200).json(products);
-});
-
-app.get("/api/users/:userId/cart", (req, res) => {
-  res.status(200).json(cartItems);
-});
-
-app.get("/api/products/:productId", (req, res) => {
-  const { productId } = req.params;
-  const product = products.find((product) => product.id === productId);
-  if (product) {
-    res.status(200).json(product);
   } else {
     res.status(404).json("produit introuvable");
   }
