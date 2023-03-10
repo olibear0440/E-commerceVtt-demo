@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 
 const products = [
   {
@@ -99,6 +100,28 @@ const cartItems = [products[0], products[2], products[3]];
 const app = express();
 app.use(bodyParser.json());
 
+
+mongoose
+  .connect(
+    "mongodb+srv://OlivierBenoit:Tigerwood0440@clustertest.i1tkd.mongodb.net/?retryWrites=true&w=majority",
+    { useNewUrlParser: true, useUnifiedTopology: true }
+  )
+  .then(() => console.log("Connexion à MongoDB réussie !"))
+  .catch(() => console.log("Connexion à MongoDB échouée !"));
+
+
+
+app.post("/api/users/:userId/cart", (req, res) => {
+  const { productId } = req.body;
+  const product = products.find((product) => product.id === productId);
+  if (product) {
+    cartItems.push(product);
+    res.status(200).json(cartItems);
+  } else {
+    res.status(404).json("produit introuvable");
+  }
+});
+
 app.get("/api/products", (req, res) => {
   res.status(200).json(products);
 });
@@ -115,6 +138,12 @@ app.get("/api/products/:productId", (req, res) => {
   } else {
     res.status(404).json("produit introuvable");
   }
+});
+
+app.delete("/api/users/:userId/cart/:productId", (req, res) => {
+  const { productId } = req.params;
+  cartItems.filter((product) => product.id !== productId);
+  res.status(200).json(cartItems);
 });
 
 module.exports = app;
