@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const mongoose = require("mongoose");
+const mongoose = require("./dbMongoose");
+const Product = require("./models/Product");
 
 const products = [
   {
@@ -99,17 +100,6 @@ const cartItems = [products[0], products[2], products[3]];
 
 const app = express();
 app.use(bodyParser.json());
-
-
-mongoose
-  .connect(
-    "mongodb+srv://OlivierBenoit:Tigerwood0440@clustertest.i1tkd.mongodb.net/?retryWrites=true&w=majority",
-    { useNewUrlParser: true, useUnifiedTopology: true }
-  )
-  .then(() => console.log("Connexion à MongoDB réussie !"))
-  .catch(() => console.log("Connexion à MongoDB échouée !"));
-
-
 
 app.post("/api/users/:userId/cart", (req, res) => {
   const { productId } = req.body;
