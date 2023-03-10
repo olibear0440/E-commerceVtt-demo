@@ -17,7 +17,7 @@
 
 <script>
 import { products } from "../demo-data";
-import NotFoundPage from "./NotFoundPage";
+import NotFoundPage from "./NotFoundPage.vue";
 
 export default {
   name: "ProductDetailPage",
